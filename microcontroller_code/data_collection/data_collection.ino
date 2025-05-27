@@ -35,9 +35,9 @@ void loop() {
       lastLcdUpdate = lcd_display_time;
 
       lcd.setCursor(0, 0);
-      lcd.print("Amplitude:     ");  // pad to clear leftovers
+      lcd.print("Amplitude:     ");
       lcd.setCursor(0, 1);
-      lcd.print("                "); // clear row
+      lcd.print("                ");
       lcd.setCursor(0, 1);
       lcd.print(sample);
     }

@@ -1,5 +1,4 @@
 #include <iostream>
-using namespace std;
 #include <fftw3.h>
 #include <complex>
 #include <vector>
@@ -7,6 +6,7 @@ using namespace std;
 #include <string>
 #include <cmath>
 #include <map>
+using namespace std;
 
 
 const int N = 128;
@@ -154,6 +154,90 @@ int accuracySingleNote(double peak, const vector<double>& notes) {
         return 0;
 
     }
+
+    //i might change the returns to smthing else soon
+}
+
+
+//double stops code
+
+//top two peaks
+pair<Peak, Peak> peakDetectorTopTwo(const vector<complex<double>>& fftResult, double sampleRate = 8475.0) { //again subject to change
+  double topBin = 0;
+  double topAmp = 0;
+  double secondTopBin = 0;
+  double secondTopAmp = 0;
+
+
+  for (int i = 0; i < N / 2; ++i) { 
+    double amp = abs(fftResult[i]);
+    if (amp > topAmp) {
+      secondTopAmp = topAmp;
+      secondTopBin = topBin;
+
+      topAmp = amp;
+      topBin = i;
+
+    } else if (amp > secondTopAmp) {
+      secondTopAmp = amp;
+      secondTopBin = i;
+    }
+  }
+
+  double topFreq = topBin * sampleRate / N;
+  double secondTopFreq = secondTopBin * sampleRate / N;
+
+  return {{topFreq, topAmp}, {secondTopFreq, secondTopAmp}};
+
+}
+
+int overtone_compute(pair<Peak, Peak> topFreqs) {
+  return abs(topFreqs.first.freq - topFreqs.second.freq);
+}
+
+int accuracyDoubleStops(double peak1, double peak2, const vector<double>& notes) {
+    double closestFreq_1 = 0.0;
+    double closestFreq_2 = 0.0;
+    double minDiff = numeric_limits<double>::max();
+
+    for (const auto& noteFreq : notes) {
+        double diff_1 = abs(peak1 - noteFreq);
+        if (diff_1 < minDiff) {
+            minDiff = diff_1;
+            closestFreq_1 = noteFreq;
+        }
+    }
+    minDiff = numeric_limits<double>::max();
+
+    for (const auto& noteFreq : notes) {
+        double diff_2 = abs(peak2 - noteFreq);
+        if (diff_2 < minDiff) {
+            minDiff = diff_2;
+            closestFreq_2 = noteFreq;
+        }
+    }
+
+    double differenceCents_first = freqToCents(closestFreq_1, peak1);
+    double differenceCents_second = freqToCents(closestFreq_2, peak2);
+
+    //this logic will be determined at testing
+
+    /*if (differenceCents_first > -5 && differenceCents_first <= 0) {
+
+        cout << "In tune, " << -differenceCents << " cents sharp\n";
+        return 1;
+
+    } else if (differenceCents < -5) {
+        cout << "Out of tune, " << -differenceCents << " cents sharp\n";
+        return 1;
+    } else if (differenceCents < 5 && differenceCents >= 0) {
+        cout << "In tune, " << differenceCents << " cents flat\n";
+        return 0;
+    } else { 
+        cout << "Out of tune, " << differenceCents << " cents flat\n";
+        return 0;
+
+    }*/
 
     //i might change the returns to smthing else soon
 }
