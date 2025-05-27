@@ -41,10 +41,10 @@ vector<complex<double>> FFT(const double* signal, int N) {
 
   fftw_execute(p);
 
-  std::vector<std::complex<double>> result(N);
+  vector<complex<double>> result(N);
 
   for (int i = 0; i < N; ++i) {
-    result[i] = std::complex<double>(out[i][0], out[i][1]);
+    result[i] = complex<double>(out[i][0], out[i][1]);
   }
 
   fftw_destroy_plan(p);
@@ -55,7 +55,7 @@ vector<complex<double>> FFT(const double* signal, int N) {
 
 //standard violin frequencies----
 
-vector<std::string> stdViolinNotes = {
+vector<string> stdViolinNotes = {
     "G3", "G#3", "A3", "A#3", "B3",
     "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4",
     "C5", "C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5", "B5",
@@ -140,7 +140,7 @@ int accuracySingleNote(double peak, const vector<double>& notes) {
     double differenceCents = freqToCents(closestFreq, peak);
 
     if (differenceCents > -5 && differenceCents <= 0) {
-      
+
         cout << "In tune, " << -differenceCents << " cents sharp\n";
         return 1;
     } else if (differenceCents < -5) {
