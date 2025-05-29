@@ -6,19 +6,75 @@
 #include <string>
 #include <cmath>
 #include <map>
-using namespace std;
+#include <queue>
 
+#include <fstream>
+#include <fcntl.h>
+#include <termios.h>
+#include <unistd.h>
+
+using namespace std;
 
 const int N = 128;
 
 int main() {
 
-  //recieving code from wifi signal from microcontroller
-  //add once i get microcontroller
+  //data pipeline from the microcontroller
+  const char* portname = "/dev/cu.usbmodem101";
+  int fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
 
-  //implement a queue to make sure data is received in order and not lost
+  if (fd < 0) {
+    cerr << "can't open serial port\n"; //fcan only use one serial port at a time
+    return 1;
+  }
+
+  struct termios tty;
+  tcgetattr(fd, &tty);
+  cfsetospeed(&tty, B115200); //from .ino
+  cfsetispeed(&tty, B115200);
+  tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;
+  tty.c_iflag &= ~IGNBRK;
+  tty.c_lflag = 0;
+  tty.c_oflag = 0;
+  tty.c_cc[VMIN]  = 1;
+  tty.c_cc[VTIME] = 1;
+  tcsetattr(fd, TCSANOW, &tty);
+
+  char c;
+  vector<int> currentBatch;
+  queue<vector<int>> batchQueue;
+  string currentLine;
+
+  while (true) {
+    if (read(fd, &c, 1) > 0) {
+      if (c == '\n') {
+        try {
+          int sample = stoi(currentLine);
+          currentBatch.push_back(sample);
+          cout << "Sample [" << currentBatch.size() << "] = " << sample << endl;
+
+          if (currentBatch.size() == N) {
+            batchQueue.push(currentBatch);
+            cout << "--- Batch completed. Queue size: " << batchQueue.size() << " ---" << endl;
+            currentBatch.clear();
+          }
+
+        } catch (...) {
+          cerr << "Invalid input: " << currentLine << endl;
+        }
+        currentLine.clear();
+      } else {
+      currentLine += c;
+      }
+    }
+  }
+
+  close(fd);
+  
+
 
   //call FFT method and other needed methods in some way
+  return 0;
 }
 
 
@@ -241,3 +297,5 @@ int accuracyDoubleStops(double peak1, double peak2, const vector<double>& notes)
 
     //i might change the returns to smthing else soon
 }
+
+
