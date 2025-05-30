@@ -17,68 +17,6 @@ using namespace std;
 
 const int N = 128;
 
-int main() {
-
-  //data pipeline from the microcontroller
-  const char* portname = "/dev/cu.usbmodem101";
-  int fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
-
-  if (fd < 0) {
-    cerr << "can't open serial port\n"; //fcan only use one serial port at a time
-    return 1;
-  }
-
-  struct termios tty;
-  tcgetattr(fd, &tty);
-  cfsetospeed(&tty, B115200); //from .ino
-  cfsetispeed(&tty, B115200);
-  tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;
-  tty.c_iflag &= ~IGNBRK;
-  tty.c_lflag = 0;
-  tty.c_oflag = 0;
-  tty.c_cc[VMIN]  = 1;
-  tty.c_cc[VTIME] = 1;
-  tcsetattr(fd, TCSANOW, &tty);
-
-  char c;
-  vector<int> currentBatch;
-  queue<vector<int>> batchQueue;
-  string currentLine;
-
-  while (true) {
-    if (read(fd, &c, 1) > 0) {
-      if (c == '\n') {
-        try {
-          int sample = stoi(currentLine);
-          currentBatch.push_back(sample);
-          cout << "Sample [" << currentBatch.size() << "] = " << sample << endl;
-
-          if (currentBatch.size() == N) {
-            batchQueue.push(currentBatch);
-            cout << "--- Batch completed. Queue size: " << batchQueue.size() << " ---" << endl;
-            currentBatch.clear();
-          }
-
-        } catch (...) {
-          cerr << "Invalid input: " << currentLine << endl;
-        }
-        currentLine.clear();
-      } else {
-      currentLine += c;
-      }
-    }
-  }
-
-  close(fd);
-  
-
-
-  //call FFT method and other needed methods in some way
-  return 0;
-}
-
-
-
 vector<complex<double>> FFT(const double* signal, int N) {
 
   fftw_complex *in, *out;
@@ -112,22 +50,23 @@ vector<complex<double>> FFT(const double* signal, int N) {
 //standard violin frequencies----
 
 vector<string> stdViolinNotes = {
-    "G3", "G#3", "A3", "A#3", "B3",
-    "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4",
-    "C5", "C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5", "B5",
-    "C6", "C#6", "D6", "D#6", "E6", "F6", "F#6", "G6", "G#6", "A6", "A#6", "B6",
-    "C7", "C#7", "D7", "D#7", "E7"
+    "G3", "G#3", "A3", "A#3", "B3", "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", 
+    "G4", "G#4", "A4", "A#4", "B4", "C5", "C#5", "D5", "D#5", "E5", "F5", "F#5", 
+    "G5", "G#5", "A5", "A#5", "B5", "C6", "C#6", "D6", "D#6", "E6", "F6", "F#6", 
+    "G6", "G#6", "A6", "A#6", "B6", "C7", "C#7", "D7", "D#7", "E7"
 };
 
 unordered_map<string, int> noteToMidi = {
     {"G3", 55}, {"G#3", 56}, {"A3", 57}, {"A#3", 58}, {"B3", 59},
     {"C4", 60}, {"C#4", 61}, {"D4", 62}, {"D#4", 63}, {"E4", 64},
-    {"F4", 65}, {"F#4", 66}, {"G4", 67}, {"G#4", 68}, {"A4", 69}, {"A#4", 70}, {"B4", 71},
-    {"C5", 72}, {"C#5", 73}, {"D5", 74}, {"D#5", 75}, {"E5", 76},
-    {"F5", 77}, {"F#5", 78}, {"G5", 79}, {"G#5", 80}, {"A5", 81}, {"A#5", 82}, {"B5", 83},
-    {"C6", 84}, {"C#6", 85}, {"D6", 86}, {"D#6", 87}, {"E6", 88},
-    {"F6", 89}, {"F#6", 90}, {"G6", 91}, {"G#6", 92}, {"A6", 93}, {"A#6", 94}, {"B6", 95},
-    {"C7", 96}, {"C#7", 97}, {"D7", 98}, {"D#7", 99}, {"E7", 100}
+    {"F4", 65}, {"F#4", 66}, {"G4", 67}, {"G#4", 68}, {"A4", 69}, 
+    {"A#4", 70}, {"B4", 71}, {"C5", 72}, {"C#5", 73}, {"D5", 74}, 
+    {"D#5", 75}, {"E5", 76}, {"F5", 77}, {"F#5", 78}, {"G5", 79}, 
+    {"G#5", 80}, {"A5", 81}, {"A#5", 82}, {"B5", 83}, {"C6", 84},
+    {"C#6", 85}, {"D6", 86}, {"D#6", 87}, {"E6", 88}, {"F6", 89}, 
+    {"F#6", 90}, {"G6", 91}, {"G#6", 92}, {"A6", 93}, {"A#6", 94}, 
+    {"B6", 95}, {"C7", 96}, {"C#7", 97}, {"D7", 98}, {"D#7", 99}, 
+    {"E7", 100}
 };
 
 //-----
@@ -144,7 +83,6 @@ double noteToFreq(const string& note, double tuning) {
 vector<double> freqs_440() {
   vector<double> freqs_in_440_hz;
   
-
   for (const auto& note : stdViolinNotes) {
     freqs_in_440_hz.push_back(noteToFreq(note, 440));
   }
@@ -293,9 +231,85 @@ int accuracyDoubleStops(double peak1, double peak2, const vector<double>& notes)
         cout << "Out of tune, " << differenceCents << " cents flat\n";
         return 0;
 
-    }*/
+    }
 
-    //i might change the returns to smthing else soon
+    //i might change the returns to smthing else soon*/
+    return 0;
 }
 
+
+int main() {
+  cout << "Program started..." << endl;
+
+  //data pipeline from the microcontroller
+  const char* portname = "/dev/cu.usbmodem1101";
+  int fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
+
+  if (fd < 0) {
+    cerr << "can't open serial port\n"; //can only use one serial port at a time
+    return 1;
+  }
+
+  struct termios tty;
+  tcgetattr(fd, &tty);
+  cfsetospeed(&tty, B115200); //from .ino
+  cfsetispeed(&tty, B115200);
+  tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;
+  tty.c_iflag &= ~IGNBRK;
+  tty.c_lflag = 0;
+  tty.c_oflag = 0;
+  tty.c_cc[VMIN]  = 1;
+  tty.c_cc[VTIME] = 1;
+  tcsetattr(fd, TCSANOW, &tty);
+
+  char c;
+  vector<int> currentBatch;
+  //queue<vector<int>> batchQueue;
+  string currentLine;
+
+  while (true) {
+    if (read(fd, &c, 1) > 0) {
+      if (c == '\n') {
+        try {
+          int sample = stoi(currentLine);
+          currentBatch.push_back(sample);
+          cout << "Sample [" << currentBatch.size() << "] = " << sample << endl;
+
+          /*if (currentBatch.size() == N) {
+            batchQueue.push(currentBatch);
+            cout << "Batch size: " << batchQueue.size() << endl;
+            currentBatch.clear();
+          }*/
+
+        } catch (...) {
+          cerr << "invalid input : " << currentLine << endl;
+        }
+        currentLine.clear();
+      } else {
+      currentLine += c;
+      }
+    }
+
+    if (currentBatch.size() == N) {
+      vector<double> batchAsDouble;
+      vector<int> curr = currentBatch;
+
+      for(int sample : curr) {
+        batchAsDouble.push_back(static_cast<double>(sample));
+      }
+
+      const double* curr_signal = batchAsDouble.data();
+      vector<complex<double>> curr_freq_domain_result = FFT(curr_signal, N);
+      Peak curr_peak = peakDetector(curr_freq_domain_result, 8475); //calculated sample rate
+      cout << "peak: " << curr_peak.freq << endl;
+      currentBatch.clear(); 
+    }
+  }
+
+
+  close(fd);
+
+  //call FFT method and other needed methods in some way
+  return 0;
+}
 
