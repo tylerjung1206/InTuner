@@ -242,7 +242,7 @@ int main() {
   cout << "Program started..." << endl;
 
   //data pipeline from the microcontroller
-  const char* portname = "/dev/cu.usbmodem1101";
+  const char* portname = "/dev/cu.usbmodem101";
   int fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
 
   if (fd < 0) {
