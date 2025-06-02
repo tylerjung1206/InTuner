@@ -1,0 +1,65 @@
+{
+	"folders": [
+		{
+			"path": "../../../../Desktop/Projects/InTuner"
+		},
+		{
+			"name": "InTuner_esp32",
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"__bit_reference": "cpp",
+			"__config": "cpp",
+			"__locale": "cpp",
+			"__threading_support": "cpp",
+			"__verbose_abort": "cpp",
+			"bitset": "cpp",
+			"cctype": "cpp",
+			"clocale": "cpp",
+			"cmath": "cpp",
+			"cstdarg": "cpp",
+			"cstddef": "cpp",
+			"cstdint": "cpp",
+			"cstdio": "cpp",
+			"cstdlib": "cpp",
+			"cstring": "cpp",
+			"ctime": "cpp",
+			"cwchar": "cpp",
+			"initializer_list": "cpp",
+			"ios": "cpp",
+			"iosfwd": "cpp",
+			"iostream": "cpp",
+			"istream": "cpp",
+			"limits": "cpp",
+			"locale": "cpp",
+			"mutex": "cpp",
+			"new": "cpp",
+			"ostream": "cpp",
+			"stdexcept": "cpp",
+			"streambuf": "cpp",
+			"string": "cpp",
+			"string_view": "cpp",
+			"tuple": "cpp",
+			"typeinfo": "cpp",
+			"__hash_table": "cpp",
+			"__node_handle": "cpp",
+			"__split_buffer": "cpp",
+			"array": "cpp",
+			"complex": "cpp",
+			"cwctype": "cpp",
+			"execution": "cpp",
+			"list": "cpp",
+			"optional": "cpp",
+			"ratio": "cpp",
+			"sstream": "cpp",
+			"unordered_map": "cpp",
+			"variant": "cpp",
+			"vector": "cpp",
+			"algorithm": "cpp",
+			"queue": "cpp",
+			"deque": "cpp"
+		}
+	}
+}
