@@ -260,7 +260,7 @@ void setup() {
 
 void loop() {
   checkModeSwitch();
-  checkLCDModeSwitch(); 
+  checkLCDModeSwitch();
 
   if (inFeedbackMode) {//feedback mode
     sampleData();
@@ -310,7 +310,7 @@ void loop() {
     recordedPeaks.clear();
 
     unsigned long startMillis = millis();
-    const unsigned long durationMillis = 60000;
+    const unsigned long durationMillis = 10000;
 
     while (millis() - startMillis < durationMillis) {
       sampleData();
